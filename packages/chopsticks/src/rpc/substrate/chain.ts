@@ -15,10 +15,15 @@ const processHeader = (header: Header) => {
  *
  * @return Block hash
  */
-export const chain_getBlockHash: Handler<[number], HexString> = async (context, [blockNumber]) => {
-  const block = await context.chain.getBlockAt(blockNumber)
+export const chain_getBlockHash: Handler<[number | undefined], HexString> = async (context, [blockNumber]) => {
+  let _blockNumber = blockNumber
+  if (_blockNumber === undefined) {
+    _blockNumber = context.chain.head.number
+  }
+
+  const block = await context.chain.getBlockAt(_blockNumber)
   if (!block) {
-    throw new ResponseError(1, `Block #${blockNumber} not found`)
+    throw new ResponseError(1, `Block #${_blockNumber} not found`)
   }
   return block.hash
 }
@@ -106,3 +111,4 @@ export const chain_unsubscribeNewHead: Handler<[string], void> = async (_context
 export const chain_subscribeNewHeads = chain_subscribeNewHead
 export const chain_unsubscribeNewHeads = chain_unsubscribeNewHead
 export const chain_unsubscribeFinalizedHeads = chain_unsubscribeNewHead
+export const chain_getHead = chain_getFinalizedHead
